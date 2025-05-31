@@ -26,7 +26,7 @@ MonoBehaviour:
     m_Size: {x: 0.1, y: 0.1}
     m_SpecifySize: 1
     m_Name: Porsche
-    m_Texture: {fileID: 2800000, guid: ac0ab4292c80647659f36836edb5d0a9, type: 3}
+    m_Texture: {fileID: 0}
   - m_SerializedGuid:
       m_GuidLow: 4713527127479264441
       m_GuidHigh: 681846629451875231
@@ -36,4 +36,4 @@ MonoBehaviour:
     m_Size: {x: 0.1, y: 0.1}
     m_SpecifySize: 1
     m_Name: Lamborghini
-    m_Texture: {fileID: 2800000, guid: 13dd42d07a7e9486185df8840c21bedb, type: 3}
+    m_Texture: {fileID: 0}

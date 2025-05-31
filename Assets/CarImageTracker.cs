@@ -77,6 +77,34 @@ public class CarImageTracker : MonoBehaviour
             {
                 spawnedCars[imageName].SetActive(false);
             }
+        void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs args)
+            {
+                foreach (var trackedImage in args.updated)
+                {
+                    Debug.Log($"Detected Image: {trackedImage.referenceImage.name} | Tracking State: {trackedImage.trackingState}");
+
+                    if (spawnedCars.ContainsKey(trackedImage.referenceImage.name))
+                    {
+                        GameObject car = spawnedCars[trackedImage.referenceImage.name];
+
+                        if (trackedImage.trackingState == TrackingState.Tracking)
+                        {
+                            car.SetActive(true);
+                            car.transform.position = trackedImage.transform.position;
+                            car.transform.rotation = trackedImage.transform.rotation;
+                        }
+                        else
+                        {
+                            car.SetActive(false);
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"No prefab assigned for image: {trackedImage.referenceImage.name}");
+                    }
+                }
+            }
+
         }
     }
 }
