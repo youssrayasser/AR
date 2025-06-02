@@ -1,110 +1,77 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
-using System.Collections.Generic;
 
-public class CarImageTracker : MonoBehaviour
+public class ImageTracker : MonoBehaviour
 {
-    [Header("AR Components")]
-    public ARTrackedImageManager trackedImageManager;
+    private ARTrackedImageManager trackedImages;
+    public GameObject[] ArPrefabs;
 
-    [Header("Car Prefabs (match names exactly with image names)")]
-    public GameObject Porsche;
-    public GameObject Lamborghini;
+    // Track spawned prefabs by image name
+    private Dictionary<string, GameObject> spawnedPrefabs = new Dictionary<string, GameObject>();
 
-    // Internal dictionary for managing spawned cars
-    private Dictionary<string, GameObject> spawnedCars = new();
+    void Awake()
+    {
+        trackedImages = GetComponent<ARTrackedImageManager>();
+    }
 
     void OnEnable()
     {
-        trackedImageManager.trackedImagesChanged += OnTrackedImagesChanged;
+        trackedImages.trackedImagesChanged += OnTrackedImagesChanged;
     }
 
     void OnDisable()
     {
-        trackedImageManager.trackedImagesChanged -= OnTrackedImagesChanged;
+        trackedImages.trackedImagesChanged -= OnTrackedImagesChanged;
     }
 
-    void Start()
+    private void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs eventArgs)
     {
-        // Initialize and disable all prefabs at start
-        if (Porsche != null)
-        {
-            var car = Instantiate(Porsche);
-            car.name = "Porsche";
-            car.SetActive(false);
-            spawnedCars["Porsche"] = car;
-        }
-
-        if (Lamborghini != null)
-        {
-            var car = Instantiate(Lamborghini);
-            car.name = "Lamborghini";
-            car.SetActive(false);
-            spawnedCars["Lamborghini"] = car;
-        }
-    }
-
-    void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs args)
-    {
-        // Update existing tracked images
-        foreach (ARTrackedImage trackedImage in args.updated)
+        // When new images are detected
+        foreach (var trackedImage in eventArgs.added)
         {
             string imageName = trackedImage.referenceImage.name;
 
-            if (spawnedCars.ContainsKey(imageName))
+            foreach (var arPrefab in ArPrefabs)
             {
-                GameObject car = spawnedCars[imageName];
-
-                if (trackedImage.trackingState == TrackingState.Tracking)
+                if (arPrefab.name == imageName && !spawnedPrefabs.ContainsKey(imageName))
                 {
-                    car.SetActive(true);
-                    car.transform.position = trackedImage.transform.position;
-                    car.transform.rotation = trackedImage.transform.rotation;
-                }
-                else
-                {
-                    car.SetActive(false);
+                    // Instantiate the prefab at the image's position and rotation
+                    GameObject newPrefab = Instantiate(arPrefab, trackedImage.transform.position, trackedImage.transform.rotation);
+                    // Parent it to the tracked image
+                    newPrefab.transform.parent = trackedImage.transform;
+                    // Save to dictionary
+                    spawnedPrefabs[imageName] = newPrefab;
                 }
             }
         }
 
-        // Disable objects for removed images
-        foreach (ARTrackedImage trackedImage in args.removed)
+        // When images are updated (tracking state changed or moved)
+        foreach (var trackedImage in eventArgs.updated)
         {
             string imageName = trackedImage.referenceImage.name;
-            if (spawnedCars.ContainsKey(imageName))
+
+            if (spawnedPrefabs.TryGetValue(imageName, out GameObject prefab))
             {
-                spawnedCars[imageName].SetActive(false);
+                prefab.SetActive(trackedImage.trackingState == TrackingState.Tracking);
+                prefab.transform.position = trackedImage.transform.position;
+                prefab.transform.rotation = trackedImage.transform.rotation;
             }
-        void OnTrackedImagesChanged(ARTrackedImagesChangedEventArgs args)
+        }
+
+        // When images are removed (no longer tracked)
+        foreach (var trackedImage in eventArgs.removed)
+        {
+            string imageName = trackedImage.referenceImage.name;
+
+            if (spawnedPrefabs.TryGetValue(imageName, out GameObject prefab))
             {
-                foreach (var trackedImage in args.updated)
-                {
-                    Debug.Log($"Detected Image: {trackedImage.referenceImage.name} | Tracking State: {trackedImage.trackingState}");
-
-                    if (spawnedCars.ContainsKey(trackedImage.referenceImage.name))
-                    {
-                        GameObject car = spawnedCars[trackedImage.referenceImage.name];
-
-                        if (trackedImage.trackingState == TrackingState.Tracking)
-                        {
-                            car.SetActive(true);
-                            car.transform.position = trackedImage.transform.position;
-                            car.transform.rotation = trackedImage.transform.rotation;
-                        }
-                        else
-                        {
-                            car.SetActive(false);
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"No prefab assigned for image: {trackedImage.referenceImage.name}");
-                    }
-                }
+                Destroy(prefab);
+                spawnedPrefabs.Remove(imageName);
             }
-
         }
     }
+
+
 }
