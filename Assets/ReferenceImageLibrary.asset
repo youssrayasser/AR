@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
-  m_Name: CarLogoImageLibrary
+  m_Name: ReferenceImageLibrary
   m_EditorClassIdentifier: 
-  m_GuidLow: 4658492924439111607
-  m_GuidHigh: 80640528180399292
+  m_GuidLow: 0
+  m_GuidHigh: 0
   m_DataStore:
     m_Storage: []
   m_Images:
   - m_SerializedGuid:
-      m_GuidLow: 5252760797797465728
-      m_GuidHigh: 16317085948633006242
+      m_GuidLow: 5454629297201887505
+      m_GuidHigh: 2972146749349773197
     m_SerializedTextureGuid:
       m_GuidLow: 7239022382198469673
       m_GuidHigh: 12236480217990361945
@@ -28,8 +28,8 @@ MonoBehaviour:
     m_Name: Porsche
     m_Texture: {fileID: 2800000, guid: ac0ab4292c80647659f36836edb5d0a9, type: 3}
   - m_SerializedGuid:
-      m_GuidLow: 4713527127479264441
-      m_GuidHigh: 681846629451875231
+      m_GuidLow: 5277466743174363706
+      m_GuidHigh: 5239052117905312443
     m_SerializedTextureGuid:
       m_GuidLow: 10702376246410298064
       m_GuidHigh: 15834129677535436056
