@@ -12,15 +12,32 @@ public class CarSelectionManager : MonoBehaviour
     public GameObject colorPanel;
     public GameObject enginePanel;
 
-    [Header("Engine Audio")]
-    public AudioSource porscheEngineAudio;
-    public AudioSource lamborghiniEngineAudio;
-
     [Header("Engine Toggles")]
     public Toggle porscheToggle;
     public Toggle lamborghiniToggle;
 
-    // Show the car selection panel
+    [Header("Voice Audio")]
+    public AudioClip porscheVoiceClip;
+    public AudioClip lamborghiniVoiceClip;
+
+    private AudioSource voiceAudioSource;
+
+    void Start()
+    {
+        // Create an AudioSource for voice playback
+        voiceAudioSource = gameObject.AddComponent<AudioSource>();
+        voiceAudioSource.playOnAwake = false;
+
+        // Hide all panels initially
+        carSelectionPanel.SetActive(false);
+        colorPanel.SetActive(false);
+        enginePanel.SetActive(false);
+
+        // Reset toggles
+        porscheToggle.isOn = false;
+        lamborghiniToggle.isOn = false;
+    }
+
     public void ShowCarSelectionPanel()
     {
         carSelectionPanel.SetActive(true);
@@ -28,7 +45,6 @@ public class CarSelectionManager : MonoBehaviour
         enginePanel.SetActive(false);
     }
 
-    // Show the color panel
     public void ShowColorPanel()
     {
         carSelectionPanel.SetActive(false);
@@ -36,7 +52,6 @@ public class CarSelectionManager : MonoBehaviour
         enginePanel.SetActive(false);
     }
 
-    // Show the engine panel
     public void ShowEnginePanel()
     {
         carSelectionPanel.SetActive(false);
@@ -44,7 +59,6 @@ public class CarSelectionManager : MonoBehaviour
         enginePanel.SetActive(true);
     }
 
-    // Called by clicking on car image (Porsche or Lamborghini)
     public void SelectCar(string carName)
     {
         if (currentCar != null)
@@ -63,49 +77,83 @@ public class CarSelectionManager : MonoBehaviour
                 break;
         }
 
-        // Hide car selection panel after choosing
         carSelectionPanel.SetActive(false);
     }
 
-    // Setup engine toggles for selected car
     private void SetupEngine(string carName)
     {
-        enginePanel.SetActive(true);
-
-        // Show only the selected car's toggle
+        // Show only relevant toggle
         porscheToggle.gameObject.SetActive(carName == "Porsche");
         lamborghiniToggle.gameObject.SetActive(carName == "Lamborghini");
 
-        // Turn both toggles off
+        // Reset toggles
         porscheToggle.isOn = false;
         lamborghiniToggle.isOn = false;
+
+        // Stop any playing voice clip
+        if (voiceAudioSource.isPlaying) voiceAudioSource.Stop();
     }
 
-    // Called by toggles
+    // Toggle voice clip playback when toggles change
     public void ToggleEngineSound(bool isOn, string carName)
     {
-        if (carName == "Porsche" && porscheEngineAudio != null)
+        if (!isOn)
         {
-            if (isOn) porscheEngineAudio.Play();
-            else porscheEngineAudio.Stop();
+            if (voiceAudioSource.isPlaying)
+                voiceAudioSource.Stop();
+            return;
         }
-        else if (carName == "Lamborghini" && lamborghiniEngineAudio != null)
+
+        if (carName == "Porsche")
         {
-            if (isOn) lamborghiniEngineAudio.Play();
-            else lamborghiniEngineAudio.Stop();
+            voiceAudioSource.clip = porscheVoiceClip;
+            voiceAudioSource.Play();
+        }
+        else if (carName == "Lamborghini")
+        {
+            voiceAudioSource.clip = lamborghiniVoiceClip;
+            voiceAudioSource.Play();
         }
     }
 
-    // Called by color buttons with Color values
+    public void OnPorscheEngineToggleChanged(bool isOn)
+    {
+        ToggleEngineSound(isOn, "Porsche");
+    }
+
+    public void OnLamborghiniEngineToggleChanged(bool isOn)
+    {
+        ToggleEngineSound(isOn, "Lamborghini");
+    }
+
     public void ChangeCarColor(Color newColor)
     {
-        if (currentCar != null)
+        if (currentCar == null)
         {
-            Renderer[] renderers = currentCar.GetComponentsInChildren<Renderer>();
-            foreach (Renderer r in renderers)
+            Debug.LogWarning("No car selected!");
+            return;
+        }
+
+        Renderer[] renderers = currentCar.GetComponentsInChildren<Renderer>();
+        foreach (Renderer r in renderers)
+        {
+            if (r.gameObject.name.Contains("Body") || r.gameObject.tag == "CarBody")
             {
                 r.material.color = newColor;
             }
         }
+    }
+
+    public void PlayCarVoice()
+    {
+        if (currentCar == null || voiceAudioSource == null) return;
+
+        if (currentCar.name.Contains("Porsche"))
+            voiceAudioSource.clip = porscheVoiceClip;
+        else if (currentCar.name.Contains("Lamborghini"))
+            voiceAudioSource.clip = lamborghiniVoiceClip;
+        else return;
+
+        voiceAudioSource.Play();
     }
 }
