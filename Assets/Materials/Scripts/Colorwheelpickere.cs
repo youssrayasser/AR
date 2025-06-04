@@ -17,28 +17,34 @@ public class ColorPicker : MonoBehaviour, IPointerDownHandler
         RectTransform rectTransform = rawImage.rectTransform;
         Vector2 localCursor;
 
-        // Convert screen point to local UI space
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out localCursor))
             return;
 
         Texture2D tex = rawImage.texture as Texture2D;
+        if (tex == null)
+        {
+            Debug.LogWarning("Texture is not Texture2D or not assigned.");
+            return;
+        }
 
-        // Normalize coordinates (0 to 1)
         Rect rect = rectTransform.rect;
         float x = (localCursor.x - rect.x) / rect.width;
         float y = (localCursor.y - rect.y) / rect.height;
 
-        // Convert to pixel position
         int texX = Mathf.Clamp((int)(x * tex.width), 0, tex.width - 1);
         int texY = Mathf.Clamp((int)(y * tex.height), 0, tex.height - 1);
 
         Color selectedColor = tex.GetPixel(texX, texY);
 
-        // Only apply if pixel is not fully transparent
+        Debug.Log($"Picked color at ({texX},{texY}): {selectedColor}");
+
         if (selectedColor.a > 0.1f)
         {
             carManager.ChangeCarColor(selectedColor);
         }
+        else
+        {
+            Debug.Log("Selected color is mostly transparent, ignoring.");
+        }
     }
 }
-    
